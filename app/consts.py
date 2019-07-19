@@ -2,3 +2,8 @@ SETTINGS = 'settings'
 
 # VIEWS
 REQUEST_VALUE = 'request_date'
+
+# DATE
+SATURDAY = 5
+SUNDAY = 6
+WEEKENDS = {SATURDAY, SUNDAY}

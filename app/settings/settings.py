@@ -1,3 +1,2 @@
-DATE_FORMAT = '%Y%m%d'
-
-CAL_PATH = ''
+MAIN_DATE_FORMAT = '%Y%m%d'
+ALLOW_DATE_FORMATS = [MAIN_DATE_FORMAT, '%Y-%m-%d']
