@@ -4,7 +4,7 @@ import middlewares as md
 import settings
 import signals
 import views
-from consts import SETTINGS, NON_WORKING_DAYS
+from consts import SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
 from routes import routes
 from utils import load_data
 
@@ -17,5 +17,7 @@ if __name__ == '__main__':
     app.on_response_prepare.append(signals.headers_prepare)
     app[SETTINGS] = settings
     app[NON_WORKING_DAYS] = load_data(settings.DATA_PATH)
+    app[ALLOWED_DATE_MIN] = min(app[NON_WORKING_DAYS])
+    app[ALLOWED_DATE_MAX] = max(app[NON_WORKING_DAYS])
 
     web.run_app(app)

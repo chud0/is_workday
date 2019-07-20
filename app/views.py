@@ -3,7 +3,7 @@ import logging
 
 from aiohttp import web
 
-from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS
+from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
 from routes import routes
 from serializers import is_workday_ser
 
@@ -52,7 +52,7 @@ class StationView(web.View):
         raise ValueError
 
     def check_date_range(self, date_: datetime.date):
-        if min(self.request.app[NON_WORKING_DAYS]) <= date_ <= max(self.request.app[NON_WORKING_DAYS]):
+        if self.request.app[ALLOWED_DATE_MIN] <= date_ <= self.request.app[ALLOWED_DATE_MAX]:
             return date_
 
         raise IndexError
