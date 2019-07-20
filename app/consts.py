@@ -4,6 +4,4 @@ SETTINGS = 'settings'
 REQUEST_VALUE = 'request_date'
 
 # DATE
-SATURDAY = 5
-SUNDAY = 6
-WEEKENDS = {SATURDAY, SUNDAY}
+NON_WORKING_DAYS = 'non_working_days'

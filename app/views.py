@@ -1,10 +1,13 @@
 import datetime
+import logging
 
 from aiohttp import web
 
-from consts import REQUEST_VALUE, SETTINGS, WEEKENDS
+from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS
 from routes import routes
 from serializers import is_workday_ser
+
+logger = logging.getLogger('app')
 
 
 @routes.view(f'/', name='main')
@@ -25,8 +28,11 @@ class StationView(web.View):
 
         try:
             parsed_date = self.parse_date(raw_date, self.request.app[SETTINGS].ALLOW_DATE_FORMATS)
+            self.check_date_range(parsed_date)
         except ValueError:
-            return web.json_response({REQUEST_VALUE: 'Not parsed', 'result': None}, status=404)
+            return web.json_response({REQUEST_VALUE: 'Not parsed', 'result': None}, status=400)
+        except IndexError:
+            return web.json_response({REQUEST_VALUE: 'Date not in calendar range', 'result': None}, status=400)
 
         result_data = {REQUEST_VALUE: parsed_date, 'result': self.is_workday(parsed_date)}
         result = is_workday_ser.dump(result_data)
@@ -41,10 +47,16 @@ class StationView(web.View):
             except ValueError:
                 continue
             else:
-                return parsed_date
+                return parsed_date.date()
 
         raise ValueError
 
-    @staticmethod
-    def is_workday(date_: datetime.date):
-        return not date_.weekday() in WEEKENDS
+    def check_date_range(self, date_: datetime.date):
+        if min(self.request.app[NON_WORKING_DAYS]) <= date_ <= max(self.request.app[NON_WORKING_DAYS]):
+            return date_
+
+        raise IndexError
+
+    def is_workday(self, date_: datetime.date):
+        logger.debug('check workday, date: %s', date_)
+        return date_ not in self.request.app[NON_WORKING_DAYS]
