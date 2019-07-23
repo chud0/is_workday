@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t chud0/is_workday .
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - docker push chud0/is_workday
+
+script:
+  - if [ $TRAVIS_BRANCH = "develop" ]; then echo "DEV deploy"; fi
+  - if [ $TRAVIS_BRANCH = "master" ]; then docker ps -a; fi
