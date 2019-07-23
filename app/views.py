@@ -3,9 +3,9 @@ import logging
 
 from aiohttp import web
 
-from .consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
-from .routes import routes
-from .serializers import is_workday_ser
+from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
+from routes import routes
+from serializers import is_workday_ser
 
 logger = logging.getLogger('app')
 

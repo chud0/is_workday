@@ -1,14 +1,18 @@
 import datetime
+import pathlib
+import sys
 from json import dumps
 
 from aiohttp import web
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 
-import app.middlewares as md
-import app.signals as signals
-import app.views as views
-from app.consts import SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
-from app.routes import routes
+sys.path.append(str(pathlib.Path.cwd() / 'app'))
+
+import middlewares as md
+import signals as signals
+import views as views
+from consts import SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
+from routes import routes
 
 VIEWS_MOD = views  # только чтобы хоть как то использовать
 
