@@ -2,6 +2,7 @@ SETTINGS = 'settings'
 
 # VIEWS
 REQUEST_VALUE = 'request_date'
+QUERY_WORD_DATE = 'date'
 
 # DATE
 NON_WORKING_DAYS = 'non_working_days'

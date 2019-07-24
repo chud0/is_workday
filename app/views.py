@@ -3,7 +3,7 @@ import logging
 
 from aiohttp import web
 
-from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
+from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX, QUERY_WORD_DATE
 from routes import routes
 from serializers import is_workday_ser
 
@@ -21,10 +21,10 @@ class MainView(web.View):
         return web.json_response(result, status=200)
 
 
-@routes.view(f'/is_workday/{{{REQUEST_VALUE}}}', name='is_workday')
-class StationView(web.View):
+@routes.view(f'/is_workday/', name='is_workday')
+class IsWorkdayView(web.View):
     async def get(self):
-        raw_date: str = self.request.match_info.get(REQUEST_VALUE)
+        raw_date: str = self.request.query.get(QUERY_WORD_DATE)
 
         try:
             parsed_date = self.parse_date(raw_date, self.request.app[SETTINGS].ALLOW_DATE_FORMATS)
@@ -60,3 +60,12 @@ class StationView(web.View):
     def is_workday(self, date_: datetime.date):
         logger.debug('check workday, date: %s', date_)
         return date_ not in self.request.app[NON_WORKING_DAYS]
+
+
+@routes.view(f'/is_workday/{{{REQUEST_VALUE}}}', name='is_workday_short')
+class IsWorkdayShortView(web.View):
+    async def get(self):
+        raw_date: str = self.request.match_info.get(REQUEST_VALUE)
+        location_url = self.request.app.router['is_workday'].url_for()
+        location = f'{location_url}?{QUERY_WORD_DATE}={raw_date}'
+        raise web.HTTPPermanentRedirect(location=location)
