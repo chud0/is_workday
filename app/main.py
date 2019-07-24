@@ -1,3 +1,5 @@
+import logging
+
 from aiohttp import web
 
 import middlewares as md
@@ -7,6 +9,8 @@ import views
 from consts import SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX
 from routes import routes
 from utils import load_data
+
+logger = logging.getLogger('app')
 
 VIEWS_MOD = views  # только чтобы хоть как то использовать
 
@@ -20,4 +24,4 @@ if __name__ == '__main__':
     app[ALLOWED_DATE_MIN] = min(app[NON_WORKING_DAYS])
     app[ALLOWED_DATE_MAX] = max(app[NON_WORKING_DAYS])
 
-    web.run_app(app)
+    web.run_app(app, print=logger.debug, access_log_format='%a %s %Tf "%r" "%{User-Agent}i"')
