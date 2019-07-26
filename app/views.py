@@ -67,5 +67,5 @@ class IsWorkdayShortView(web.View):
     async def get(self):
         raw_date: str = self.request.match_info.get(REQUEST_VALUE)
         location_url = self.request.app.router['is_workday'].url_for()
-        location = f'{location_url}?{QUERY_WORD_DATE}={raw_date}'
+        location = location_url.with_query(**{QUERY_WORD_DATE: raw_date})
         raise web.HTTPPermanentRedirect(location=location)
