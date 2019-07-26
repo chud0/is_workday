@@ -43,7 +43,7 @@ class MyAppTestCase(AioHTTPTestCase):
         resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
         assert resp.status == 200
         text = await resp.text()
-        expected_data = dumps(dict(request_date=test_date.isoformat(), result=True))
+        expected_data = dumps(dict(request_date=test_date.isoformat(), result=True, description=None))
         assert expected_data == text
 
     @unittest_run_loop
@@ -52,7 +52,7 @@ class MyAppTestCase(AioHTTPTestCase):
         resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
         assert resp.status == 200
         text = await resp.text()
-        expected_data = dumps(dict(request_date=test_date.isoformat(), result=False))
+        expected_data = dumps(dict(request_date=test_date.isoformat(), result=False, description=None))
         assert expected_data == text
 
     @unittest_run_loop
@@ -61,5 +61,5 @@ class MyAppTestCase(AioHTTPTestCase):
         resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
         assert resp.status == 400
         text = await resp.text()
-        expected_data = dumps(dict(request_date='Date not in calendar range', result=None))
+        expected_data = dumps(dict(request_date=None, result=None, description='ERROR: Date not in calendar range'))
         assert expected_data == text
