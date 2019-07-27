@@ -9,10 +9,17 @@ python:
 services:
   - docker
 
+env:
+  global:
+    - IMAGE_NAME=chud0/is_workday
+
 script:
   - make test
 
 before_deploy:
-  - docker build -t chud0/is_workday .
+  - docker build -t $IMAGE_NAME .
+  - docker tag $IMAGE_NAME $IMAGE_NAME:latest
+  - docker tag $IMAGE_NAME $IMAGE_NAME:$TRAVIS_COMMIT
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - docker push chud0/is_workday
+  - docker push $IMAGE_NAME:latest
+  - docker push $IMAGE_NAME:$TRAVIS_COMMIT
