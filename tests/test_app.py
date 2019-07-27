@@ -5,6 +5,7 @@ from json import dumps
 
 from aiohttp import web
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
+from yarl import URL
 
 sys.path.append(str(pathlib.Path.cwd() / 'app'))
 
@@ -63,3 +64,20 @@ class MyAppTestCase(AioHTTPTestCase):
         text = await resp.text()
         expected_data = dumps(dict(request_date=None, result=None, description='ERROR: Date not in calendar range'))
         assert expected_data == text
+
+    @unittest_run_loop
+    async def test_bad_format(self):
+        test_date = self.MIN_DATE + datetime.timedelta(days=50)
+        resp = await self.client.request(
+            'GET',
+            URL('/v1/is_workday/').with_query(date=datetime.datetime.strftime(test_date, '%yTTT%duu%m')),
+        )
+        assert resp.status == 400
+        text = await resp.text()
+        expected_data = dumps(dict(request_date=None, result=None, description='ERROR: Not parsed'))
+        assert expected_data == text
+
+    @unittest_run_loop
+    async def test_main_ok(self):
+        resp = await self.client.request('GET', URL('/v1/'))
+        assert resp.status == 200
