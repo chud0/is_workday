@@ -6,10 +6,12 @@ class DateIter(ABC):
     resolution = datetime.timedelta(days=1)
 
     @abstractmethod
-    def get_init_date(self, date: datetime.date) -> datetime.date: ...
+    def get_init_date(self, date: datetime.date) -> datetime.date:
+        ...
 
     @abstractmethod
-    def get_target_pattern(self, date: datetime.date) -> int: ...
+    def get_target_pattern(self, date: datetime.date) -> int:
+        ...
 
     def __init__(self, target_date: datetime.date):
         self.previous_date = self.get_init_date(target_date) - self.resolution

@@ -41,7 +41,7 @@ class MyAppTestCase(AioHTTPTestCase):
     @unittest_run_loop
     async def test_ok(self):
         test_date = datetime.date(2019, 1, 2)
-        resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
+        resp = await self.client.request('GET', f'/v1/day/{test_date.isoformat()}')
         assert resp.status == 200
         text = await resp.text()
         expected_data = dumps(dict(request_date=test_date.isoformat(), result=True, description=None))
@@ -50,7 +50,7 @@ class MyAppTestCase(AioHTTPTestCase):
     @unittest_run_loop
     async def test_weekend(self):
         test_date = self.WEEKENDS[0]
-        resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
+        resp = await self.client.request('GET', f'/v1/day/{test_date.isoformat()}')
         assert resp.status == 200
         text = await resp.text()
         expected_data = dumps(dict(request_date=test_date.isoformat(), result=False, description=None))
@@ -59,7 +59,7 @@ class MyAppTestCase(AioHTTPTestCase):
     @unittest_run_loop
     async def test_not_in_range_min(self):
         test_date = self.MIN_DATE - datetime.timedelta(days=5)
-        resp = await self.client.request('GET', f'/v1/is_workday/{test_date.isoformat()}')
+        resp = await self.client.request('GET', f'/v1/day/{test_date.isoformat()}')
         assert resp.status == 400
         text = await resp.text()
         expected_data = dumps(dict(request_date=None, result=None, description='ERROR: Date not in calendar range'))
@@ -70,7 +70,7 @@ class MyAppTestCase(AioHTTPTestCase):
         test_date = self.MIN_DATE + datetime.timedelta(days=50)
         resp = await self.client.request(
             'GET',
-            URL('/v1/is_workday/').with_query(date=datetime.datetime.strftime(test_date, '%yTTT%duu%m')),
+            URL('/v1/day/').with_query(date=datetime.datetime.strftime(test_date, '%yTTT%duu%m')),
         )
         assert resp.status == 400
         text = await resp.text()
