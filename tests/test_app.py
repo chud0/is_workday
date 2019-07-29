@@ -78,6 +78,17 @@ class MyAppTestCase(AioHTTPTestCase):
         assert expected_data == text
 
     @unittest_run_loop
+    async def test_bad_format_none(self):
+        resp = await self.client.request(
+            'GET',
+            URL('/v1/is_workday/'),
+        )
+        assert resp.status == 400
+        text = await resp.text()
+        expected_data = dumps(dict(request_date=None, result=None, description='ERROR: Not parsed'))
+        assert expected_data == text
+
+    @unittest_run_loop
     async def test_main_ok(self):
         resp = await self.client.request('GET', URL('/v1/'))
         assert resp.status == 200

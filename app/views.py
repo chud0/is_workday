@@ -27,7 +27,7 @@ class MainView(web.View):
 @routes.view(f'/is_workday/', name='is_workday')
 class IsWorkdayView(web.View):
     async def get(self):
-        raw_date: str = self.request.query.get(QUERY_WORD_DATE)
+        raw_date: str = self.request.query.get(QUERY_WORD_DATE, '')
 
         try:
             parsed_date = self.parse_date(raw_date, self.request.app[SETTINGS].ALLOW_DATE_FORMATS)
