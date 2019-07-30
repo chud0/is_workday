@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 from functools import partial
 
@@ -6,7 +7,7 @@ from aiohttp import web
 
 from consts import REQUEST_VALUE, SETTINGS, NON_WORKING_DAYS, ALLOWED_DATE_MIN, ALLOWED_DATE_MAX, QUERY_WORD_DATE
 from routes import routes
-from serializers import is_workday_ser, IsWDResponse, many_day_ser
+from serializers import is_workday_ser, IsWDResponse, many_day_ser, month_req_ser, day_req_ser
 from utils import MonthIter
 
 logger = logging.getLogger('app')
@@ -26,34 +27,19 @@ class MainView(web.View):
 
 
 class DateBaseView(web.View):
-    async def get_iwd_response(self, raw_date):
+    async def get_iwd_response(self, date: datetime.date):
         try:
-            parsed_date = self.parse_date(raw_date, self.request.app[SETTINGS].ALLOW_DATE_FORMATS)
-            self.check_date_range(parsed_date)
-        except ValueError:
-            return IsWDResponse(description='ERROR: Not parsed', status=400)
-        except IndexError:
-            return IsWDResponse(description='ERROR: Date not in calendar range', status=400)
+            self.check_date_range(date)
+        except IndexError as e:
+            return IsWDResponse(date, description=e.args[0], status=400)
         else:
-            return IsWDResponse(parsed_date, self.is_workday(parsed_date))
-
-    @staticmethod
-    def parse_date(str_date: str, allowed_formats) -> datetime.date:
-        for date_format in allowed_formats:
-            try:
-                parsed_date = datetime.datetime.strptime(str_date, date_format)
-            except ValueError:
-                continue
-            else:
-                return parsed_date.date()
-
-        raise ValueError
+            return IsWDResponse(date, self.is_workday(date))
 
     def check_date_range(self, date_: datetime.date) -> datetime.date:
         if self.request.app[ALLOWED_DATE_MIN] <= date_ <= self.request.app[ALLOWED_DATE_MAX]:
             return date_
 
-        raise IndexError
+        raise IndexError(dict(date=['Not in calendar range']))
 
     def is_workday(self, date_: datetime.date) -> bool:
         logger.debug('check workday, date: %s', date_)
@@ -63,8 +49,9 @@ class DateBaseView(web.View):
 @routes.view(f'/day/', name='day')
 class DayView(DateBaseView):
     async def get(self):
-        raw_date: str = self.request.query.get(QUERY_WORD_DATE)
-        response = await self.get_iwd_response(raw_date)
+        validated_request = day_req_ser.load(self.request.query)
+        date = validated_request[QUERY_WORD_DATE]
+        response = await self.get_iwd_response(date)
         return json_responder(response.get_response(), status=response.status)
 
 
@@ -80,10 +67,8 @@ class DayShortView(web.View):
 @routes.view(f'/month/', name='month')
 class MonthView(DateBaseView):
     async def get(self):
-        raw_date: str = self.request.query.get(QUERY_WORD_DATE)
-        parsed_date = self.parse_date(raw_date, self.request.app[SETTINGS].ALLOW_DATE_FORMATS)
-        result = [
-            (await self.get_iwd_response(str(current_date)))._asdict() async for current_date in MonthIter(parsed_date)
-        ]
-        response = IsWDResponse(parsed_date, result)
+        validated_request = month_req_ser.load(self.request.query)
+        date = validated_request[QUERY_WORD_DATE]
+        result = [(await self.get_iwd_response(current_date))._asdict() async for current_date in MonthIter(date)]
+        response = IsWDResponse(date, result)
         return web.json_response(response._asdict(), dumps=many_day_ser.dumps, status=200)
