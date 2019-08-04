@@ -20,6 +20,7 @@ paths:
       - days
       description: |
         Method for determining whether a day is a working day (including holidays)
+      operationId: CheckDay
       parameters:
       - name: date
         in: query
@@ -38,6 +39,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
+          links:
+            CheckDay:
+              operationId: CheckDay
+              parameters:
+                date: "20190909"
         400:
           description: can't parsed date
           content:
@@ -45,7 +51,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               example:
+                request_date: null
+                result: null
                 description: '{"date": ["Not a valid date."]}}'
+          links:
+            CheckDay:
+              operationId: CheckDay
+              parameters:
+                date: 2019T0909
         404:
           description: date not in calendar
           content:
@@ -54,7 +67,13 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 request_date: 2029-09-09
+                result: null
                 description: '{"date": ["Not in calendar range"]}}'
+          links:
+            CheckDay:
+              operationId: CheckDay
+              parameters:
+                date: "20290909"
 components:
   schemas:
     Response:
