@@ -15,3 +15,4 @@ if not LOGS_DIR.is_dir():
 
 
 DATA_PATH = BASE_DIR / 'data' / 'data.csv'
+DOCS_PATH = BASE_DIR / 'data' / 'doc.html'

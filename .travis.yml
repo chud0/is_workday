@@ -9,6 +9,10 @@ python:
 services:
   - docker
 
+install:
+  - pip install -r requirements.txt
+  - pip install -r deploy-requirements.txt
+
 env:
   global:
     - IMAGE_NAME=chud0/is_workday
@@ -17,6 +21,7 @@ script:
   - make test
 
 before_deploy:
+  - python swagger_to_html.py < openapi.yaml > data/doc.html
   - docker build -t $IMAGE_NAME .
   - docker tag $IMAGE_NAME $IMAGE_NAME:latest
   - docker tag $IMAGE_NAME $IMAGE_NAME:$TRAVIS_COMMIT

@@ -15,6 +15,12 @@ logger = logging.getLogger('app')
 json_responder = partial(web.json_response, dumps=is_workday_ser.dumps)
 
 
+@routes.view('/docs/', name='docs')
+class DocsView(web.View):
+    async def get(self):
+        return web.FileResponse(self.request.app[SETTINGS].DOCS_PATH)
+
+
 @routes.view(f'/', name='main')
 class MainView(web.View):
     async def get(self):
