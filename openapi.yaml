@@ -1,87 +1,125 @@
 openapi: 3.0.0
+servers:
+  - url: http://isworkday.ru/v1
+    description: The production API server
 info:
-  title: IsWorkDay API
   description: This is a simple API for check work days.
+  version: "1.0.0"
+  title: IsWorkDay API
   contact:
     url: https://github.com/chud0/is_workday/issues
   license:
     name: Apache 2.0
-    url: https://github.com/chud0/is_workday/blob/master/LICENSE
-  version: 1.0.0
-servers:
-- url: http://isworkday.ru/v1
-  description: The production API server
+    url: 'https://github.com/chud0/is_workday/blob/master/LICENSE'
 tags:
-- name: days
+  - name: days
 paths:
   /day/:
     get:
       tags:
-      - days
+        - days
+      operationId: CheckDay
       description: |
         Method for determining whether a day is a working day (including holidays)
-      operationId: CheckDay
       parameters:
-      - name: date
-        in: query
-        description: date for check
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-        example: "20190909"
+        - in: query
+          name: date
+          description: date for check
+          required: true
+          schema:
+            type: string
+            format: date
+          example: '20190909'
       responses:
-        200:
-          description: check result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-          links:
-            CheckDay:
-              operationId: CheckDay
-              parameters:
-                date: "20190909"
-        400:
-          description: can't parsed date
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                request_date: null
-                result: null
-                description: '{"date": ["Not a valid date."]}}'
-          links:
-            CheckDay:
-              operationId: CheckDay
-              parameters:
-                date: 2019T0909
-        404:
-          description: date not in calendar
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                request_date: 2029-09-09
-                result: null
-                description: '{"date": ["Not in calendar range"]}}'
-          links:
-            CheckDay:
-              operationId: CheckDay
-              parameters:
-                date: "20290909"
+        '200':
+          $ref: '#/components/responses/OkResponse'
+        '400':
+          $ref: '#/components/responses/UnparsedResponse'
+        '404':
+          $ref: '#/components/responses/NotRangeResponse'
+  /day/{day}:
+    get:
+      tags: [days]
+      parameters:
+        - in: path
+          name: day
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Short link for check day. Redirect to /day/ with params in query.
+      responses:
+        '200':
+          $ref: '#/components/responses/OkResponse'
+        '400':
+          $ref: '#/components/responses/UnparsedResponse'
+        '404':
+          $ref: '#/components/responses/NotRangeResponse'
+  /month/:
+    get:
+      tags:
+        - days
+      operationId: CheckMonth
+      description: |
+        Method for determining whether a day is a working day (including holidays) for month
+      parameters:
+        - in: query
+          name: date
+          description: month for check
+          required: true
+          schema:
+            type: string
+            format: date
+          example: '201909'
+      responses:
+        '200':
+          $ref: '#/components/responses/MonthOkResponse'
+
 components:
+  responses:
+    OkResponse:
+      description: check day result
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DayResponseSchema'
+          example:
+            $ref: '#/components/examples/ValidDate'
+      links:
+        CheckDay:
+          operationId: CheckDay
+          parameters:
+            date: '20190909'
+    UnparsedResponse:
+      description: can't parsed date
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DayResponseSchema'
+          example:
+            $ref: '#/components/examples/NotValidDate'
+    NotRangeResponse:
+      description: date not in calendar
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DayResponseSchema'
+          example:
+            $ref: '#/components/examples/NotValidDate'
+    MonthOkResponse:
+      description: check month result
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DaysResponseSchema'
+
   schemas:
-    Response:
-      required:
-      - description
-      - request_date
-      - result
+    DayResponseSchema:
       type: object
+      required:
+        - request_date
+        - result
+        - description
       properties:
         request_date:
           type: string
@@ -90,7 +128,32 @@ components:
         result:
           type: boolean
           nullable: true
-          example: true
         description:
           type: string
           nullable: true
+    DaysResponseSchema:
+      allOf:
+        - $ref: '#/components/schemas/DayResponseSchema'
+        - type: object
+          properties:
+            result:
+              type: array
+              items:
+                $ref: '#/components/schemas/DayResponseSchema'
+
+  examples:
+    ValidDate:
+      value:
+        request_date: '2019-09-09'
+        result: true
+        description: null
+    NotValidDate:
+      value:
+        request_date: null
+        result: null
+        description: '{"date": ["Not a valid date."]}}'
+    NotInRange:
+      value:
+        request_date: '2029-09-09'
+        result: null
+        description: '{"date": ["Not in calendar range"]}}'
