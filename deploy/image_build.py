@@ -13,10 +13,9 @@ docker = local['docker']
 
 
 def build_docs(template_path: Path, yaml_path: Path, doc_path: Path) -> None:
-    with template_path.open('r') as t_f, yaml_path.open('r') as y_f, doc_path.open('w') as d_f:
-        template = t_f.read()
-        spec = yaml.load(y_f.read(), Loader=yaml.FullLoader)
-        d_f.write(template % json.dumps(spec, default=str))
+    template = template_path.read_text()
+    spec = yaml.load(yaml_path.read_text(), Loader=yaml.FullLoader)
+    doc_path.write_text(template % json.dumps(spec, default=str))
 
     logger.info('Doc file saved to: %s', doc_path)
 
@@ -44,8 +43,8 @@ if __name__ == '__main__':
         '-p', local.env['DOCKER_PASSWORD'],
     ]()
 
-    # docker['push', image_tag_commit]()
-    # logger.info('Pushed image: %s', image_tag_commit)
-    #
-    # docker['push', image_tag_latest]()
-    # logger.info('Pushed image: %s', image_tag_latest)
+    docker['push', image_tag_commit]()
+    logger.info('Pushed image: %s', image_tag_commit)
+
+    docker['push', image_tag_latest]()
+    logger.info('Pushed image: %s', image_tag_latest)
