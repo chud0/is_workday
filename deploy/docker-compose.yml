@@ -3,8 +3,6 @@ version: '3'
 services:
   app:
     image: chud0/is_workday:latest
-#    build:
-#      context: .
     container_name: app
     restart: unless-stopped
     environment:
