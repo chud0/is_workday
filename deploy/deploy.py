@@ -1,7 +1,9 @@
 import logging
 from pathlib import Path
 
-from plumbum import local, SshMachine
+import paramiko
+from plumbum import local
+from plumbum.machines.paramiko_machine import ParamikoMachine
 
 rsync = local['rsync']
 
@@ -20,7 +22,13 @@ if __name__ == '__main__':
     deploy_key_file = BASE_DIR / 'tmp'
     deploy_key_file.write_text(deploy_key)
 
-    with SshMachine(host, user=user, keyfile=deploy_key_file) as rem:
+    with ParamikoMachine(
+            host,
+            user=user,
+            keyfile=str(deploy_key_file),
+            load_system_host_keys=False,
+            missing_host_policy=paramiko.AutoAddPolicy(),
+    ) as rem:
         rem.upload(BASE_DIR / 'deploy' / 'docker-compose.yml', f'{remote_dir}/docker-compose.yml')
         logger.info('Copy %s', 'docker-compose.yml')
         rem.upload(BASE_DIR / 'deploy' / 'nginx.conf', f'{remote_dir}/nginx.conf')
