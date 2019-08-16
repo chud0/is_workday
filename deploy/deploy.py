@@ -5,8 +5,6 @@ import paramiko
 from plumbum import local
 from plumbum.machines.paramiko_machine import ParamikoMachine
 
-rsync = local['rsync']
-
 BASE_DIR = Path(__file__).parent.parent
 
 logging.basicConfig(format='%(levelname)-8s %(asctime)s  %(message)s', level=logging.INFO)
@@ -20,24 +18,25 @@ if __name__ == '__main__':
     deploy_key = local.env['DEPLOY_KEY']
 
     deploy_key_file = BASE_DIR / 'tmp'
-    deploy_key_file.write_text(deploy_key)
+    deploy_key_file.write_text('\n'.join(deploy_key.split('\\n')))
 
-    with ParamikoMachine(
-            host,
-            user=user,
-            keyfile=str(deploy_key_file),
-            load_system_host_keys=False,
-            missing_host_policy=paramiko.AutoAddPolicy(),
-    ) as rem:
-        rem.upload(BASE_DIR / 'deploy' / 'docker-compose.yml', f'{remote_dir}/docker-compose.yml')
-        logger.info('Copy %s', 'docker-compose.yml')
-        rem.upload(BASE_DIR / 'deploy' / 'nginx.conf', f'{remote_dir}/nginx.conf')
-        logger.info('Copy %s', 'nginx.conf')
+    try:
+        with ParamikoMachine(
+                host,
+                user=user,
+                keyfile=str(deploy_key_file),
+                load_system_host_keys=False,
+                missing_host_policy=paramiko.AutoAddPolicy(),
+        ) as rem:
+            rem.upload(BASE_DIR / 'deploy' / 'docker-compose.yml', f'{remote_dir}/docker-compose.yml')
+            logger.info('Copy %s', 'docker-compose.yml')
+            rem.upload(BASE_DIR / 'deploy' / 'nginx.conf', f'{remote_dir}/nginx.conf')
+            logger.info('Copy %s', 'nginx.conf')
 
-        docker_compose = rem['docker-compose']
-        docker_compose['down', '--rmi', 'all']()
-        logger.info('docker-compose stop')
-        docker_compose['up', '-d']()
-        logger.info('docker-compose up')
-
-    deploy_key_file.unlink()
+            docker_compose = rem['docker-compose']
+            docker_compose['down', '--rmi', 'all']()
+            logger.info('docker-compose stop')
+            docker_compose['up', '-d']()
+            logger.info('docker-compose up')
+    finally:
+        deploy_key_file.unlink()
