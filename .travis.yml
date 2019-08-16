@@ -11,7 +11,6 @@ services:
 
 install:
   - pip install -r requirements.txt
-  - pip install -r deploy-requirements.txt
 
 env:
   global:
@@ -21,14 +20,11 @@ script:
   - make test
 
 before_deploy:
-  - python swagger_to_html.py < openapi.yaml > data/doc.html
-  - docker build -t $IMAGE_NAME .
-  - docker tag $IMAGE_NAME $IMAGE_NAME:latest
-  - docker tag $IMAGE_NAME $IMAGE_NAME:$TRAVIS_COMMIT
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - pip install -r deploy-requirements.txt
+  - python deploy/image_build.py
 
 deploy:
   provider: script
-  script: bash docker_push
+  script: python deploy/deploy.py
   on:
     branch: master
