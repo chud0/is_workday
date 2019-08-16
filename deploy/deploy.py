@@ -20,13 +20,12 @@ if __name__ == '__main__':
     deploy_key_file = BASE_DIR / 'tmp'
     deploy_key_file.write_text(deploy_key)
 
-    rsync[BASE_DIR / 'deploy' / 'docker-compose.yml', f'{user}@{host}:{remote_dir}/docker-compose.yml']()
-    logger.info('Copy %s', 'docker-compose.yml')
-
-    rsync[BASE_DIR / 'deploy' / 'nginx.conf', f'{user}@{host}:{remote_dir}/nginx.conf']()
-    logger.info('Copy %s', 'nginx.conf')
-
     with SshMachine(host, user=user, keyfile=deploy_key_file) as rem:
+        rem.upload(BASE_DIR / 'deploy' / 'docker-compose.yml', f'{remote_dir}/docker-compose.yml')
+        logger.info('Copy %s', 'docker-compose.yml')
+        rem.upload(BASE_DIR / 'deploy' / 'nginx.conf', f'{remote_dir}/nginx.conf')
+        logger.info('Copy %s', 'nginx.conf')
+
         docker_compose = rem['docker-compose']
         docker_compose['down', '--rmi', 'all']()
         logger.info('docker-compose stop')
