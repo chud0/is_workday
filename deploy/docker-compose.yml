@@ -5,13 +5,11 @@ services:
     image: chud0/is_workday:latest
     container_name: app
     restart: unless-stopped
-    environment:
-      - DISABLE_CONSOLE_LOG=False
     command: python app/main.py
     networks:
       - app-network
     volumes:
-      - .:/home/app/local
+      - ./local:/home/app/local
 
   #Nginx Service
   webserver:

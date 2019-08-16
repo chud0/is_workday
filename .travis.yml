@@ -25,6 +25,6 @@ before_deploy:
 
 deploy:
   provider: script
-  script: bash docker_push
+  script: python deploy/deploy.py
   on:
     branch: master
