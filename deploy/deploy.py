@@ -18,7 +18,7 @@ if __name__ == '__main__':
     deploy_key = local.env['DEPLOY_KEY']
 
     deploy_key_file = BASE_DIR / 'tmp'
-    deploy_key_file.write_text('\n'.join(deploy_key.split('\\n')))
+    deploy_key_file.write_text('\n'.join(deploy_key.split('|')))
 
     try:
         with ParamikoMachine(
