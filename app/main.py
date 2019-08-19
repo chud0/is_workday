@@ -30,4 +30,4 @@ if __name__ == '__main__':
     app[ALLOWED_DATE_MIN] = min(app[NON_WORKING_DAYS])
     app[ALLOWED_DATE_MAX] = max(app[NON_WORKING_DAYS])
 
-    web.run_app(app, print=logger.debug, access_log_format='%a %{X-Real-IP}i %Tf "%r" "%{User-Agent}i"')
+    web.run_app(app, print=logger.debug, access_log_format='%{X-Real-IP}i %s %Tf "%r" "%{User-Agent}i"')
